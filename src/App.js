@@ -1,5 +1,6 @@
 import logo from './logo.svg';
 import Caver from 'caver-js';
+// KAS Authorization key는 환경변수 처리
 import * as env_var from './variables';
 import './App.css';
 
@@ -45,6 +46,26 @@ const getBalance = (address) => {
   })
 }
 
+const setCount = async (newCount) => {
+  try {
+    // 1. 사용할 account (개인 계좌) 설정
+    const deployer = caver.wallet.keyring.createFromPrivateKey(env_var.ACCOUNT_PRIVATE_KEY);
+    caver.wallet.add(deployer);
+
+    // 2. 스마트 컨트랙트 실행 트랙잭션 날리기 
+    // call 대신 send
+    const receipt = await CountContract.methods.setCount(newCount).send({
+      from: deployer.address, // address
+      gas: "0x4bfd200" // 수수료 (임의의 숫자)
+    });
+  
+    // 3. 결과 확인
+    console.log(receipt);
+  } catch(e) {
+    console.log(`[ERROR_SET_COUNT]${e}`);
+  }
+}
+
 function App() {
   readCount();
   getBalance('0xb4f8ba912aeeefa7f155bac55e31b485dc2ee713');
@@ -52,6 +73,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
+        <button title={'count 변경'} onClick={()=>{setCount(100)}} />
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
